@@ -6,13 +6,15 @@ import {expect} from 'chai';
 import dataset from '../src/dataset';
 import {Learn} from '../src/js/Learn/Learn';
 
-describe('Learn library', () => {
+describe('LearnJS kNN classifier', () => {
 
 	let learn;
 
 	beforeEach(() => {
 
-		learn= new Learn(Learn.KNN());
+		learn= new Learn(Learn.KNN({
+			k: 4
+		}));
 	});
 
 	describe('API Config', () => {
@@ -37,17 +39,28 @@ describe('Learn library', () => {
 		});
 	});
 
-	describe('Testing', () => {
+	describe('Classification', () => {
+
+		let testData;
 
 		beforeEach(() => {
+
+			testData= dataset.test[0];
 
 			learn.train(dataset.train);
 		});
 
 		it('should should provide a prediction', () => {
 
-			// learn.classify();
+			const result= learn.classify(testData.data);
 
+			expect(result).to.eql(testData.label);
+		});
+
+		it('should throw error when the dimensions are wrong', () => {
+
+			// The point to classify has the wrong dimension
+			expect(() => learn.classify([ 0 ])).to.throw(Error);
 		});
 	});
 });
