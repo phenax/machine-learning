@@ -12,19 +12,17 @@ describe('LearnJS kNN classifier', () => {
 
 	beforeEach(() => {
 
-		learn= new Learn(Learn.KNN({
+		learn= new Learn(Learn.kNN({
 			k: 4
 		}));
 	});
 
-	describe('API Config', () => {
-
-	});
 
 	describe('Training', () => {
 
 		it('should update the training dataset', () => {
 
+			// Add the training dataset
 			learn.train(dataset.train);
 
 			expect(learn.trainingDataset).to.have.length(dataset.train.length);
@@ -32,12 +30,15 @@ describe('LearnJS kNN classifier', () => {
 
 		it('should concat the new training set to the old one', () => {
 
+			// Add the first half of the training dataset
 			learn.train(dataset.train.slice(0, dataset.train.length/2));
+			// Add the second half
 			learn.train(dataset.train.slice(dataset.train.length/2, dataset.train.length));
 
 			expect(learn.trainingDataset).to.have.length(dataset.train.length);
 		});
 	});
+
 
 	describe('Classification', () => {
 
@@ -45,6 +46,7 @@ describe('LearnJS kNN classifier', () => {
 
 		beforeEach(() => {
 
+			// Test node
 			testData= dataset.test[0];
 
 			learn.train(dataset.train);
