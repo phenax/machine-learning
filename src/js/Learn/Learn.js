@@ -1,12 +1,13 @@
 
 import kNN from './lib/kNN';
+import kMeans from './lib/kMeans';
 
 export class Learn {
 
 	constructor(fn) {
 		this._algorithm= fn;
 		this.trainingDataset= [];
-		this._classifySet= () => {};
+		this._preparedFn= () => {};
 	}
 
 	/**
@@ -24,7 +25,7 @@ export class Learn {
 		this.trainingDataset= this.trainingDataset.concat(dataset);
 
 		// Train the algorithm
-		this._classifySet= this._algorithm(this.trainingDataset);
+		this._preparedFn= this._algorithm(this.trainingDataset);
 	}
 
 
@@ -41,9 +42,18 @@ export class Learn {
 		if(point.constructor !== Array)
 			throw new Error('The point to classify has to be an array');
 
-		return this._classifySet(point);
+		return this._preparedFn(point);
 	}
 
+
+	cluster(point) {
+
+		if(point.constructor !== Array)
+			throw new Error('The point to classify has to be an array');
+
+		return this._preparedFn(point);
+	}
 }
 
 Learn.kNN= kNN;
+Learn.kMeans= kMeans;
