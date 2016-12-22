@@ -61,8 +61,10 @@ describe('LearnJS kNN classifier', () => {
 
 		it('should throw error when the dimensions are wrong', () => {
 
-			// The point to classify has the wrong dimension
-			expect(() => learn.classify([ 0 ])).to.throw(Error);
+			// The point to classify has the wrong dimensions
+			const getLabel= () => learn.classify([ 1 ]);
+
+			expect(getLabel).to.throw(Error);
 		});
 	});
 });
