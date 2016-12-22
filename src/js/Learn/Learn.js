@@ -6,6 +6,7 @@ export class Learn {
 	constructor(fn) {
 		this._algorithm= fn;
 		this.trainingDataset= [];
+		this._classifySet= () => {};
 	}
 
 	/**
@@ -21,6 +22,9 @@ export class Learn {
 
 		// Concat the training dataset to the old one
 		this.trainingDataset= this.trainingDataset.concat(dataset);
+
+		// Train the algorithm
+		this._classifySet= this._algorithm(this.trainingDataset);
 	}
 
 
@@ -37,7 +41,7 @@ export class Learn {
 		if(point.constructor !== Array)
 			throw new Error('The point to classify has to be an array');
 
-		return this._algorithm(this.trainingDataset)(point);
+		return this._classifySet(point);
 	}
 
 }
