@@ -5,6 +5,8 @@ import {expect} from 'chai';
 
 import dataset from '../src/iris-dataset';
 import {Learn} from '../src/js/Learn/Learn';
+import {nodeClock} from '../src/js/Learn/utils/clock';
+
 
 describe('LearnJS kNN classifier', () => {
 
@@ -93,6 +95,23 @@ describe('LearnJS kNN classifier', () => {
 
 			// Prediction accuracy should be greater than 80%
 			expect(rightPredictions).to.be.above(minimumRightPredictions);
+		});
+
+
+		it('should run all calculations in under 50ms', () => {
+
+			const start= nodeClock();
+
+			dataset.test.map(point => learn.classify(point.data));
+
+			const duration= nodeClock(start);
+
+			console.log(
+				`        Time to classify ${dataset.test.length} points:`,
+				duration, 'ms'
+			);
+
+			expect(duration).to.be.below(40);
 		});
 	});
 });
