@@ -8,7 +8,6 @@ export class Learn {
 		this.trainingDataset= [];
 	}
 
-
 	/**
 	 * Train the algorithm
 	 * 

@@ -22,6 +22,7 @@ describe('LearnJS kNN classifier', () => {
 
 	describe('Training', () => {
 
+
 		it('should update the training dataset', () => {
 
 			// Add the training dataset
@@ -29,6 +30,7 @@ describe('LearnJS kNN classifier', () => {
 
 			expect(learn.trainingDataset).to.have.length(dataset.train.length);
 		});
+
 
 		it('should concat the new training set to the old one', () => {
 
@@ -54,12 +56,14 @@ describe('LearnJS kNN classifier', () => {
 			learn.train(dataset.train);
 		});
 
+
 		it('should should provide a prediction', () => {
 
 			const result= learn.classify(testData.data);
 
 			expect(result).to.eql(testData.label);
 		});
+
 
 		it('should throw error when the dimensions are wrong', () => {
 
@@ -98,11 +102,13 @@ describe('LearnJS kNN classifier', () => {
 		});
 
 
-		it('should run all calculations in under 50ms', () => {
+		it('should run all calculations in under 40ms', () => {
 
 			const start= nodeClock();
 
-			dataset.test.map(point => learn.classify(point.data));
+			// For loop instead of forEach for preformance
+			for(let i= 0; i< dataset.test.length; i++)
+				learn.classify(dataset.test[i].data);
 
 			const duration= nodeClock(start);
 

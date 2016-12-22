@@ -1,5 +1,5 @@
 
-// k Nearest Neighbors classification
+// k Nearest Neighbors classifier
 export default (config={}) => {
 
 	// Calculates the euclidean distance between two n-dimensional vectors
@@ -22,8 +22,11 @@ export default (config={}) => {
 		// 10% of training dataset length is the default value of k if its greater than 4
 		config.k= config.k || Math.max(Math.floor(training.length/10), 4);
 
+		// The label that the point most likely belongs to
 		let maxLabel= '_';
 
+		// A dictionary of the number of times a label occurs
+		// Label: Count
 		const labelCount= {};
 		labelCount[maxLabel]= 0;
 
@@ -39,6 +42,7 @@ export default (config={}) => {
 				maxLabel= label;
 		};
 
+		// Can optimize this a lot but this looks way better than a stupid for loop
 		training
 			// Calculate the distance of all training elements from the new point
 			.map( p => ({ label: p.label, distance: distance(p.data, point) }))
