@@ -3,7 +3,7 @@
 
 import {expect} from 'chai';
 
-import dataset from '../src/dataset';
+import dataset from '../src/iris-dataset';
 import {Learn} from '../src/js/Learn/Learn';
 
 describe('LearnJS kNN classifier', () => {
