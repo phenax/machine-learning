@@ -66,6 +66,26 @@ describe('LearnJS kNN classifier', () => {
 
 			expect(getLabel).to.throw(Error);
 		});
+
+		it('should predict atleast 80% of the test set right', () => {
+
+			// Minimum right predictions to pass the test
+			const minimumRightPredictions= dataset.test.length*80/100;
+
+			let rightPredictions= 0;
+
+			dataset.test.forEach(point => {
+
+				const label= learn.classify(point.data);
+
+				if(label === point.label)
+					rightPredictions++;
+			});
+
+			console.log('Prediction accuracy: ', 100*rightPredictions/dataset.test.length);
+
+			expect(rightPredictions).to.be.above(minimumRightPredictions);
+		});
 	});
 });
 
