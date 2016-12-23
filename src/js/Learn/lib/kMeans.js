@@ -101,22 +101,36 @@ export default (config={}) => {
 
 		const kmeans= new KMeansClustering(trainDS);
 
-		console.log(trainDS.length);
-
 		// Plot n random section points(N dimensional points)
 		kmeans.randomizeClusters(config.clusters);
+		console.log(trainDS.length);
 
-		console.log(kmeans.clusters.map(p => p.contains.length));
+		let prevDist, errorFactor;
 
-		kmeans.gatherClusters();
+		do {
 
-		console.log(kmeans.clusters.map(p => p.contains.length));
+			kmeans.gatherClusters();
 
-		// kmeans.nextClusters();
+			prevDist= kmeans.clusters.map(p => p.point);
 
-		// console.log(kmeans.clusters.map(p => p.contains.length));
+			// console.log(kmeans.clusters.map(p => p.contains.length));
+
+			kmeans.nextClusters();
+
+			// console.log(kmeans.clusters.map(p => p.contains.length));
+
+			errorFactor= 
+				kmeans.clusters
+					.map((p, i) => distance(p.point, prevDist[i]))
+					.reduce((total, dist) => total + dist, 0);
+
+			// console.log(errorFactor);
+
+		} while(errorFactor >= 0.00001);
 
 		return testPoint => {
+
+			console.log(kmeans.clusters.map(p => p.contains.map(p => p.label)));
 
 			// Some kind of output? Not sure what to do here
 			return [trainDS, testPoint];
