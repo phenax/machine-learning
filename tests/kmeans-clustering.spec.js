@@ -8,7 +8,7 @@ import {Learn} from '../src/js/Learn/Learn';
 import {nodeClock} from '../src/js/Learn/utils/clock';
 
 
-describe('LearnJS kNN classifier', () => {
+describe('LearnJS kMeans classifier', () => {
 
 	let learn;
 
@@ -19,16 +19,72 @@ describe('LearnJS kNN classifier', () => {
 		}));
 
 		learn.train(dataset.train);
-
-		learn.cluster(dataset.test[0].data);
 	});
+
+	const calculateAccuracy= (callback) => {
+
+		// Number of right predictions
+		let rightPredictions= 0;
+
+		// Iterate over all the test data
+		dataset.test.forEach(point => {
+
+			const label= learn.classify(point.data);
+
+			if(label === point.label) {
+				rightPredictions++;
+				if(callback) callback(point);
+			}
+		});
+
+		return rightPredictions;
+	};
+
+	const printAccuracy= (count) => {
+		console.log(
+			'        Prediction accuracy: ',
+			Math.round(100000*100*count/dataset.test.length)/100000,
+			'%'
+		);
+	};
 
 
 	describe('Clustering', () => {
 
-		it('should be fine', () => {
+		it('should predict the correct label', () => {
 
+			const label= learn.cluster(dataset.test[0].data);
+
+			expect(label).to.eql(dataset.test[0].label);
 		});
+
+		it('should predict atleast 80% of the test set right', () => {
+
+			// Minimum right predictions to pass the test
+			const minimumRightPredictions= dataset.test.length*50/100;
+
+			const rightPredictions= calculateAccuracy();
+
+			printAccuracy(rightPredictions);
+
+			// Prediction accuracy should be greater than 80%
+			expect(rightPredictions).to.be.above(minimumRightPredictions);
+		});
+
+		// it('should improve accuracy after training with the correct results', () => {
+
+		// 	const rightResults= [];
+
+		// 	const previousAcc= calculateAccuracy(point => rightResults.push(point));
+
+		// 	learn.train(rightResults);
+
+		// 	const currentAcc= calculateAccuracy();
+
+		// 	printAccuracy(currentAcc);
+
+		// 	expect(previousAcc < currentAcc).to.be.true;
+		// });
 	});
 
 });

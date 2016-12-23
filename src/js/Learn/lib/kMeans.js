@@ -109,7 +109,6 @@ export default (config={}) => {
 
 		// Plot n random section points(N dimensional points)
 		kmeans.randomizeClusters(config.clusters);
-		console.log(trainDS.length);
 
 		let prevDist, errorFactor;
 

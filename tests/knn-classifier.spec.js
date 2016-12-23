@@ -128,7 +128,7 @@ describe('LearnJS kNN classifier', () => {
 
 				printAccuracy(currentAcc);
 
-				expect(previousAcc < currentAcc).to.be.true;
+				expect(previousAcc).to.be.below(currentAcc);
 			});
 		});
 
