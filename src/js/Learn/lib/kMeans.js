@@ -45,21 +45,28 @@ class KMeansClustering {
 
 		this.dataset.forEach(point => {
 
-			let closestCluster= this.clusters[0];
-			let closestDist= distance(point.data, this.clusters[0].point);
+			const cluster= this.getClosestCluster(point);
 
-			this.clusters.forEach(cluster => {
-
-				const dist= distance(point.data, cluster.point);
-
-				if(closestDist > dist) {
-					closestDist= dist;
-					closestCluster= cluster;
-				}
-			});
-
-			closestCluster.contains.push(point);
+			cluster.contains.push(point);
 		});
+	}
+
+	getClosestCluster(point) {
+
+		let closestCluster= this.clusters[0];
+		let closestDist= distance(point.data, this.clusters[0].point);
+
+		this.clusters.forEach(cluster => {
+
+			const dist= distance(point.data, cluster.point);
+
+			if(closestDist > dist) {
+				closestDist= dist;
+				closestCluster= cluster;
+			}
+		});
+
+		return closestCluster;
 	}
 
 
@@ -78,7 +85,7 @@ class KMeansClustering {
 
 	nextClusters() {
 
-		this.clusters.map(cpoint => {
+		this.clusters.forEach(cpoint => {
 
 			const mean= this.getClusterMean(cpoint.contains);
 
@@ -96,7 +103,6 @@ export default (config={}) => {
 	if(!('clusters' in config))
 		throw new Error('Need to specify the number of clusters for kMeans');
 
-
 	return trainDS => {
 
 		const kmeans= new KMeansClustering(trainDS);
@@ -109,31 +115,39 @@ export default (config={}) => {
 
 		do {
 
-			kmeans.gatherClusters();
-
 			prevDist= kmeans.clusters.map(p => p.point);
 
-			// console.log(kmeans.clusters.map(p => p.contains.length));
+			kmeans.gatherClusters();
 
 			kmeans.nextClusters();
-
-			// console.log(kmeans.clusters.map(p => p.contains.length));
 
 			errorFactor= 
 				kmeans.clusters
 					.map((p, i) => distance(p.point, prevDist[i]))
 					.reduce((total, dist) => total + dist, 0);
 
-			// console.log(errorFactor);
-
 		} while(errorFactor >= 0.00001);
 
 		return testPoint => {
 
-			console.log(kmeans.clusters.map(p => p.contains.map(p => p.label)));
+			const closestCluster= kmeans.getClosestCluster({data:testPoint});
+
+			let maxLabel= '_';
+			const most= {};
+			most[maxLabel]= 0;
+
+			closestCluster.contains.map(p => {
+
+				if(!(p.label in most))
+					most[p.label]= 0;
+
+				if((++most[p.label]) > most[maxLabel]) {
+					maxLabel= p.label;
+				}
+			});
 
 			// Some kind of output? Not sure what to do here
-			return [trainDS, testPoint];
+			return maxLabel;
 		};
 	};
 };
