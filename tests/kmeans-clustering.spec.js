@@ -58,7 +58,7 @@ describe('LearnJS kMeans classifier', () => {
 			expect(label).to.eql(dataset.test[0].label);
 		});
 
-		it('should predict atleast 80% of the test set right', () => {
+		it('should predict atleast 50% of the test set right', () => {
 
 			// Minimum right predictions to pass the test
 			const minimumRightPredictions= dataset.test.length*50/100;
