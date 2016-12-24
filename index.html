@@ -1,14 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 	<title>Digit recognition</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" type="text/css" href="/dist/style.css"/>
+	<script async defer src='/dist/main.js'></script>
+	<link rel="stylesheet" href="/dist/style.css"/>
 </head>
-<body>
-
-Hello
-
-<script src='/dist/main.js'></script>
-</body>
+	<body>
+		<button class='js-clear'>Clear</button>
+		<canvas class='canvas js-canvas' width='200' height='200'></canvas>
+		<div class='btn-set'>
+			<div><input type='text' class='js-input' /></div>
+			<button class='js-train'>Train</button>
+			<button class='js-guess'>Guess</button>
+		</div>
+		<div class='js-output'></div>
+	</body>
 </html>
