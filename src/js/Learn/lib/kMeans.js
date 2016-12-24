@@ -136,16 +136,36 @@ class KMeansClustering {
 	}
 }
 
+// Think about the structure of the code again pls
 export default (config={}) => {
 
+	// The error factor for the cluster points
 	config.errorFactor= config.errorFactor || 5;
 
+	// The clustering type
+	config.type= config.type || 'mean';
+
+	// Need the number of clusters
 	if(!('clusters' in config))
 		throw new Error('Need to specify the number of clusters for kMeans');
 
+	// Trainin time
 	return trainDS => {
 
 		const kmeans= new KMeansClustering(trainDS);
+
+		let getClusterCenter;
+
+		switch(config.type) {
+		case 'mean':
+			getClusterCenter= kmeans.getClusterMean;
+			break;
+		case 'median':
+			getClusterCenter= kmeans.getClusterMedian;
+			break;
+		default:
+			throw new Error('Invalid clustering type');
+		}
 
 		// Plot n random section points(N dimensional points)
 		kmeans.randomizeClusters(config.clusters);
@@ -154,12 +174,17 @@ export default (config={}) => {
 
 		do {
 
+			// Cache the previous cluster points
 			prevDist= kmeans.clusters.map(p => p.point);
 
+			// Gather all the points to the closest cluster
 			kmeans.gatherClusters();
 
-			kmeans.nextClusters(kmeans.getClusterMedian);
+			// Calculate the next cluster position
+			kmeans.nextClusters(getClusterCenter);
 
+			// The error factor(i.e. sum of distances between 
+			// old cluster point and the new cluster points)
 			errorFactor= 
 				kmeans.clusters
 					.map((p, i) => distance(p.point, prevDist[i]))
@@ -167,10 +192,13 @@ export default (config={}) => {
 
 		} while(errorFactor >= config.errorFactor);
 
+		// Classification(Not clusterin right now)
 		return testPoint => {
 
+			// Get the cluster closest to the test point
 			const closestCluster= kmeans.getClosestCluster({data:testPoint});
 
+			// Name of the most repeated label
 			let maxLabel= '_';
 			const most= {};
 			most[maxLabel]= 0;

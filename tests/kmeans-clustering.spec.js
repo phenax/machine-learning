@@ -16,7 +16,8 @@ describe('LearnJS kMeans classifier', () => {
 
 		learn= new Learn(Learn.kMeans({
 			clusters: 3,
-			errorFactor: 10
+			errorFactor: 10,
+			type: 'median'
 		}));
 
 		learn.train(dataset.train);
