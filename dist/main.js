@@ -66,8 +66,10 @@
 		var $guessBtn = document.querySelector('.js-guess');
 		var $textField = document.querySelector('.js-input');
 		var $output = document.querySelector('.js-output');
-	
 		var $clear = document.querySelector('.js-clear');
+	
+		$canvas.width = 100;
+		$canvas.height = 100;
 	
 		var dg = new _DigitRecognition2.default($canvas);
 	
@@ -91,8 +93,6 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -156,6 +156,7 @@
 		}, {
 			key: 'mouseDownHandler',
 			value: function mouseDownHandler(e) {
+				e.preventDefault();
 				this._mouseDown = true;
 				this._prevTouch = this._normalizeTouch(e);
 			}
@@ -164,6 +165,7 @@
 			value: function mouseMoveHandler(e) {
 	
 				if (this._mouseDown) {
+					e.preventDefault();
 	
 					var p = this._normalizeTouch(e);
 	
@@ -196,7 +198,13 @@
 	
 				var image = this.ctx.getImageData(0, 0, this._bound.width, this._bound.height);
 	
-				return _extends({}, image, { data: Array.from(image.data) });
+				var pixels = [];
+	
+				for (var i = 0; i < image.data.length; i += 4) {
+					if (image.data[i + 3] === 255) pixels.push(1);else pixels.push(0);
+				}
+	
+				return Object.assign({}, image, { data: pixels });
 			}
 		}, {
 			key: 'train',

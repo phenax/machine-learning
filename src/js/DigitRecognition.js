@@ -54,6 +54,7 @@ export default class DigitRecognition {
 	}
 
 	mouseDownHandler(e) {
+		e.preventDefault();
 		this._mouseDown= true;
 		this._prevTouch= this._normalizeTouch(e);
 	}
@@ -61,6 +62,7 @@ export default class DigitRecognition {
 	mouseMoveHandler(e) {
 
 		if(this._mouseDown) {
+			e.preventDefault();
 
 			const p= this._normalizeTouch(e);
 
@@ -92,9 +94,18 @@ export default class DigitRecognition {
 
 	getImage() {
 
-		const image= this.ctx.getImageData(0, 0, this._bound.width, this._bound.height);
+		let image= this.ctx.getImageData(0, 0, this._bound.width, this._bound.height);
 
-		return {...image, data: Array.from(image.data) };
+		const pixels= [];
+
+		for(let i= 0; i < image.data.length; i+= 4) {
+			if(image.data[i + 3] === 255)
+				pixels.push(1);
+			else
+				pixels.push(0);
+		}
+
+		return Object.assign({}, image, { data: pixels });
 	}
 
 	train(label) {

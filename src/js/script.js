@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	const $guessBtn= document.querySelector('.js-guess');
 	const $textField= document.querySelector('.js-input');
 	const $output= document.querySelector('.js-output');
-
 	const $clear= document.querySelector('.js-clear');
+
+	$canvas.width= 100;
+	$canvas.height= 100;
 
 	const dg= new DigitRecognition($canvas);
 
