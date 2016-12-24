@@ -15,7 +15,8 @@ describe('LearnJS kMeans classifier', () => {
 	beforeEach(() => {
 
 		learn= new Learn(Learn.kMeans({
-			clusters: 3
+			clusters: 3,
+			errorFactor: 10
 		}));
 
 		learn.train(dataset.train);
@@ -29,9 +30,9 @@ describe('LearnJS kMeans classifier', () => {
 		// Iterate over all the test data
 		dataset.test.forEach(point => {
 
-			const label= learn.classify(point.data);
+			const result= learn.classify(point.data);
 
-			if(label === point.label) {
+			if(result.label === point.label) {
 				rightPredictions++;
 				if(callback) callback(point);
 			}
@@ -53,9 +54,11 @@ describe('LearnJS kMeans classifier', () => {
 
 		it('should predict the correct label', () => {
 
-			const label= learn.cluster(dataset.test[0].data);
+			const result= learn.cluster(dataset.test[0].data);
 
-			expect(label).to.eql(dataset.test[0].label);
+			// expect(result.accuracy).to.be.above(50);
+
+			expect(result.label).to.eql(dataset.test[0].label);
 		});
 
 		it('should predict atleast 50% of the test set right', () => {

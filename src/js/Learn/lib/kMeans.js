@@ -138,6 +138,8 @@ class KMeansClustering {
 
 export default (config={}) => {
 
+	config.errorFactor= config.errorFactor || 5;
+
 	if(!('clusters' in config))
 		throw new Error('Need to specify the number of clusters for kMeans');
 
@@ -163,7 +165,7 @@ export default (config={}) => {
 					.map((p, i) => distance(p.point, prevDist[i]))
 					.reduce((total, dist) => total + dist, 0);
 
-		} while(errorFactor >= 10);
+		} while(errorFactor >= config.errorFactor);
 
 		return testPoint => {
 
@@ -183,8 +185,10 @@ export default (config={}) => {
 				}
 			});
 
-			// Some kind of output? Not sure what to do here
-			return maxLabel;
+			return {
+				label: maxLabel,
+				accuracy: 100*most[maxLabel]/closestCluster.contains.length
+			};
 		};
 	};
 };
