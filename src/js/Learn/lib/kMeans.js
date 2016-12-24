@@ -9,6 +9,9 @@ class KMeansClustering {
 		
 		this.dataset= ds;
 		this.clusters= [];
+
+		this.getClusterMean= this.getClusterMean.bind(this);
+		this.getClusterMedian= this.getClusterMedian.bind(this);
 	}
 
 	getBounds() {
@@ -82,12 +85,47 @@ class KMeansClustering {
 		return sum.map(s => s/points.length);
 	}
 
+	getClusterMedian(points) {
 
-	nextClusters() {
+		const emptyArr= Array(this.dataset[0].data.length).fill(0);
+
+		if(points.length === 0) return emptyArr;
+
+		const sortedDS= points.sort((p1, p2) => {
+
+			const sumSquare= data => data.reduce((a, b) => a + b*b, 0);
+
+			return sumSquare(p1.data) - sumSquare(p2.data);
+		});
+
+		let median;
+
+		const mid= Math.floor(sortedDS.length/2);
+
+		if(sortedDS.length%2 == 1) {
+
+			const emptyPoint= { data: emptyArr };
+
+			median= this.getClusterMean([
+				sortedDS[mid + 1] || emptyPoint,
+				sortedDS[mid - 1] || emptyPoint
+			]);
+		} else {
+			median= sortedDS[mid].data;
+		}
+
+		// console.log(median);
+
+		return median;
+	}
+
+	nextClusters(getClusterCenter) {
+
+		getClusterCenter= getClusterCenter || this.getClusterMean;
 
 		this.clusters.forEach(cpoint => {
 
-			const mean= this.getClusterMean(cpoint.contains);
+			const mean= getClusterCenter(cpoint.contains);
 
 			cpoint.point= mean;
 
@@ -118,14 +156,14 @@ export default (config={}) => {
 
 			kmeans.gatherClusters();
 
-			kmeans.nextClusters();
+			kmeans.nextClusters(kmeans.getClusterMedian);
 
 			errorFactor= 
 				kmeans.clusters
 					.map((p, i) => distance(p.point, prevDist[i]))
 					.reduce((total, dist) => total + dist, 0);
 
-		} while(errorFactor >= 0.00001);
+		} while(errorFactor >= 10);
 
 		return testPoint => {
 
