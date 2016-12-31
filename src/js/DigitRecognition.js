@@ -17,7 +17,7 @@ export default class DigitRecognition {
 
 		this.ctx= this.$canvas.getContext('2d');
 
-		this.learn= new Learn(Learn.kNN({ k: 3 }));
+		this.learn= new Learn(Learn.kNN({ k: 2 }));
 
 		this._mouseDown= false;
 		this._prevTouch= {};
@@ -40,10 +40,10 @@ export default class DigitRecognition {
 
 
 		this.$canvas.addEventListener('mousedown', this.mouseDownHandler);
-		this.$canvas.addEventListener('mouseup', this.mouseUpHandler);
-		this.$canvas.addEventListener('mousemove', this.mouseMoveHandler);
 		this.$canvas.addEventListener('touchstart', this.mouseDownHandler);
+		this.$canvas.addEventListener('mouseup', this.mouseUpHandler);
 		this.$canvas.addEventListener('touchend', this.mouseUpHandler);
+		this.$canvas.addEventListener('mousemove', this.mouseMoveHandler);
 		this.$canvas.addEventListener('touchmove', this.mouseMoveHandler);
 	}
 
@@ -126,14 +126,24 @@ export default class DigitRecognition {
 
 		img.onload= () => {
 			this._dummyCtx.drawImage(img, 0, 0);
-			this._train(label, this.getImage(this._dummyCtx).data);
+			this._trainWithData(label, this.getImage(this._dummyCtx).data);
 			this.clearCanvas(this._dummyCtx);
 		};
 
 		img.onerror= () => { throw new Error('Couldn\'t load image'); };
 	}
 
-	_train(label, data) {
+	_trainWithData(label, data) {
+
+		data= 
+			data
+				.map((bit, i) => (bit === 1)? i: -1)
+				.reduce((array, i) => {
+					(i === -1)? array.push(i): array.unshift(i);
+
+					return array;
+				}, []);
+
 		this.learn.train([{ label, data }]);
 	}
 
@@ -141,7 +151,7 @@ export default class DigitRecognition {
 
 		const {data}= this.getImage();
 
-		this._train(label, data);
+		this._trainWithData(label, data);
 	}
 
 	classify() {

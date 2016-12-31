@@ -13,24 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
 	$canvas.width= 100;
 	$canvas.height= 100;
 
-	const dg= new DigitRecognition($canvas);
+	const _digitR= new DigitRecognition($canvas);
 
 	const numberOfEach= 5;
 	const images= ['one', 'two'];
 	images.forEach(name => {
 		for(let i= 0; i < numberOfEach; i++)
-			dg.trainWithImage(name, `/dist/training/${name}_${i + 1}.png`);
+			_digitR.trainWithImage(name, `/dist/training/${name}_${i + 1}.png`);
 	});
 
-	$trainBtn.addEventListener('click', () => dg.train($textField.value));
-	$clearBtn.addEventListener('click', () => dg.clearCanvas());
+	$trainBtn.addEventListener('click', () => _digitR.train($textField.value));
+	$clearBtn.addEventListener('click', () => _digitR.clearCanvas());
 	$guessBtn.addEventListener('click', () => {
 
 		$output.textContent= ' ';
 
-		setTimeout(() => {
-			const result= dg.classify();
-			$output.textContent= result;
-		}, 0);
+		$output.textContent= _digitR.classify();
 	});
 });

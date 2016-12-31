@@ -71,30 +71,27 @@
 		$canvas.width = 100;
 		$canvas.height = 100;
 	
-		var dg = new _DigitRecognition2.default($canvas);
+		var _digitR = new _DigitRecognition2.default($canvas);
 	
 		var numberOfEach = 5;
 		var images = ['one', 'two'];
 		images.forEach(function (name) {
 			for (var i = 0; i < numberOfEach; i++) {
-				dg.trainWithImage(name, '/dist/training/' + name + '_' + (i + 1) + '.png');
+				_digitR.trainWithImage(name, '/dist/training/' + name + '_' + (i + 1) + '.png');
 			}
 		});
 	
 		$trainBtn.addEventListener('click', function () {
-			return dg.train($textField.value);
+			return _digitR.train($textField.value);
 		});
 		$clearBtn.addEventListener('click', function () {
-			return dg.clearCanvas();
+			return _digitR.clearCanvas();
 		});
 		$guessBtn.addEventListener('click', function () {
 	
 			$output.textContent = ' ';
 	
-			setTimeout(function () {
-				var result = dg.classify();
-				$output.textContent = result;
-			}, 0);
+			$output.textContent = _digitR.classify();
 		});
 	});
 
@@ -129,7 +126,7 @@
 	
 			this.ctx = this.$canvas.getContext('2d');
 	
-			this.learn = new _Learn.Learn(_Learn.Learn.kNN({ k: 3 }));
+			this.learn = new _Learn.Learn(_Learn.Learn.kNN({ k: 2 }));
 	
 			this._mouseDown = false;
 			this._prevTouch = {};
@@ -154,10 +151,10 @@
 				document.addEventListener('resize', this.resizeHandler);
 	
 				this.$canvas.addEventListener('mousedown', this.mouseDownHandler);
-				this.$canvas.addEventListener('mouseup', this.mouseUpHandler);
-				this.$canvas.addEventListener('mousemove', this.mouseMoveHandler);
 				this.$canvas.addEventListener('touchstart', this.mouseDownHandler);
+				this.$canvas.addEventListener('mouseup', this.mouseUpHandler);
 				this.$canvas.addEventListener('touchend', this.mouseUpHandler);
+				this.$canvas.addEventListener('mousemove', this.mouseMoveHandler);
 				this.$canvas.addEventListener('touchmove', this.mouseMoveHandler);
 			}
 		}, {
@@ -241,7 +238,7 @@
 	
 				img.onload = function () {
 					_this._dummyCtx.drawImage(img, 0, 0);
-					_this._train(label, _this.getImage(_this._dummyCtx).data);
+					_this._trainWithData(label, _this.getImage(_this._dummyCtx).data);
 					_this.clearCanvas(_this._dummyCtx);
 				};
 	
@@ -250,8 +247,17 @@
 				};
 			}
 		}, {
-			key: '_train',
-			value: function _train(label, data) {
+			key: '_trainWithData',
+			value: function _trainWithData(label, data) {
+	
+				data = data.map(function (bit, i) {
+					return bit === 1 ? i : -1;
+				}).reduce(function (array, i) {
+					i === -1 ? array.push(i) : array.unshift(i);
+	
+					return array;
+				}, []);
+	
 				this.learn.train([{ label: label, data: data }]);
 			}
 		}, {
@@ -260,7 +266,7 @@
 				var _getImage = this.getImage(),
 				    data = _getImage.data;
 	
-				this._train(label, data);
+				this._trainWithData(label, data);
 			}
 		}, {
 			key: 'classify',
