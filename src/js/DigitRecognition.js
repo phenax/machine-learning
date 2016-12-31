@@ -7,6 +7,14 @@ export default class DigitRecognition {
 
 		this.$canvas= canvas;
 
+		const $testCanvas= document.createElement('canvas');
+		$testCanvas.width= this.$canvas.width;
+		$testCanvas.height= this.$canvas.height;
+		this._dummyCtx= $testCanvas.getContext('2d');
+
+		document.body.appendChild($testCanvas);
+
+
 		this.ctx= this.$canvas.getContext('2d');
 
 		this.learn= new Learn(Learn.kNN({ k: 3 }));
@@ -59,6 +67,8 @@ export default class DigitRecognition {
 		this._prevTouch= this._normalizeTouch(e);
 	}
 
+	mouseUpHandler() { this._mouseDown= false; }
+
 	mouseMoveHandler(e) {
 
 		if(this._mouseDown) {
@@ -67,8 +77,8 @@ export default class DigitRecognition {
 			const p= this._normalizeTouch(e);
 
 			if( p.x >= this.$canvas.width ||
-				p.x <= 0 ||
 				p.y >= this.$canvas.height ||
+				p.x <= 0 ||
 				p.y <= 0
 			) {
 				this._mouseDown= false;
@@ -84,17 +94,14 @@ export default class DigitRecognition {
 		}
 	}
 
-	mouseUpHandler() {
-		this._mouseDown= false;
+
+	clearCanvas(ctx=(this.ctx)) {
+		ctx.clearRect(0, 0, this._bound.width, this._bound.height);
 	}
 
-	clearCanvas() {
-		this.ctx.clearRect(0, 0, this._bound.width, this._bound.height);
-	}
+	getImage(ctx=(this.ctx)) {
 
-	getImage() {
-
-		let image= this.ctx.getImageData(0, 0, this._bound.width, this._bound.height);
+		let image= ctx.getImageData(0, 0, this._bound.width, this._bound.height);
 
 		const pixels= [];
 
@@ -108,11 +115,33 @@ export default class DigitRecognition {
 		return Object.assign({}, image, { data: pixels });
 	}
 
+
+
+
+
+	trainWithImage(label, filename) {
+
+		const img= new Image();
+		img.src= filename;
+
+		img.onload= () => {
+			this._dummyCtx.drawImage(img, 0, 0);
+			this._train(label, this.getImage(this._dummyCtx).data);
+			this.clearCanvas(this._dummyCtx);
+		};
+
+		img.onerror= () => { throw new Error('Couldn\'t load image'); };
+	}
+
+	_train(label, data) {
+		this.learn.train([{ label, data }]);
+	}
+
 	train(label) {
 
 		const {data}= this.getImage();
 
-		this.learn.train([{ label, data }]);
+		this._train(label, data);
 	}
 
 	classify() {

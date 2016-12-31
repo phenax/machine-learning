@@ -8,16 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
 	const $guessBtn= document.querySelector('.js-guess');
 	const $textField= document.querySelector('.js-input');
 	const $output= document.querySelector('.js-output');
-	const $clear= document.querySelector('.js-clear');
+	const $clearBtn= document.querySelector('.js-clear');
 
 	$canvas.width= 100;
 	$canvas.height= 100;
 
 	const dg= new DigitRecognition($canvas);
 
-	$trainBtn.addEventListener('click', () => dg.train($textField.value));
-	$guessBtn.addEventListener('click', () => {
-		$output.textContent= dg.classify();
+	const numberOfEach= 5;
+	const images= ['one', 'two'];
+	images.forEach(name => {
+		for(let i= 0; i < numberOfEach; i++)
+			dg.trainWithImage(name, `/dist/training/${name}_${i + 1}.png`);
 	});
-	$clear.addEventListener('click', () => dg.clearCanvas());
+
+	$trainBtn.addEventListener('click', () => dg.train($textField.value));
+	$clearBtn.addEventListener('click', () => dg.clearCanvas());
+	$guessBtn.addEventListener('click', () => {
+
+		$output.textContent= ' ';
+
+		setTimeout(() => {
+			const result= dg.classify();
+			$output.textContent= result;
+		}, 0);
+	});
 });

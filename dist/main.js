@@ -66,21 +66,35 @@
 		var $guessBtn = document.querySelector('.js-guess');
 		var $textField = document.querySelector('.js-input');
 		var $output = document.querySelector('.js-output');
-		var $clear = document.querySelector('.js-clear');
+		var $clearBtn = document.querySelector('.js-clear');
 	
 		$canvas.width = 100;
 		$canvas.height = 100;
 	
 		var dg = new _DigitRecognition2.default($canvas);
 	
+		var numberOfEach = 5;
+		var images = ['one', 'two'];
+		images.forEach(function (name) {
+			for (var i = 0; i < numberOfEach; i++) {
+				dg.trainWithImage(name, '/dist/training/' + name + '_' + (i + 1) + '.png');
+			}
+		});
+	
 		$trainBtn.addEventListener('click', function () {
 			return dg.train($textField.value);
 		});
-		$guessBtn.addEventListener('click', function () {
-			$output.textContent = dg.classify();
-		});
-		$clear.addEventListener('click', function () {
+		$clearBtn.addEventListener('click', function () {
 			return dg.clearCanvas();
+		});
+		$guessBtn.addEventListener('click', function () {
+	
+			$output.textContent = ' ';
+	
+			setTimeout(function () {
+				var result = dg.classify();
+				$output.textContent = result;
+			}, 0);
 		});
 	});
 
@@ -105,6 +119,13 @@
 			_classCallCheck(this, DigitRecognition);
 	
 			this.$canvas = canvas;
+	
+			var $testCanvas = document.createElement('canvas');
+			$testCanvas.width = this.$canvas.width;
+			$testCanvas.height = this.$canvas.height;
+			this._dummyCtx = $testCanvas.getContext('2d');
+	
+			document.body.appendChild($testCanvas);
 	
 			this.ctx = this.$canvas.getContext('2d');
 	
@@ -161,6 +182,11 @@
 				this._prevTouch = this._normalizeTouch(e);
 			}
 		}, {
+			key: 'mouseUpHandler',
+			value: function mouseUpHandler() {
+				this._mouseDown = false;
+			}
+		}, {
 			key: 'mouseMoveHandler',
 			value: function mouseMoveHandler(e) {
 	
@@ -169,7 +195,7 @@
 	
 					var p = this._normalizeTouch(e);
 	
-					if (p.x >= this.$canvas.width || p.x <= 0 || p.y >= this.$canvas.height || p.y <= 0) {
+					if (p.x >= this.$canvas.width || p.y >= this.$canvas.height || p.x <= 0 || p.y <= 0) {
 						this._mouseDown = false;
 						return;
 					}
@@ -183,20 +209,19 @@
 				}
 			}
 		}, {
-			key: 'mouseUpHandler',
-			value: function mouseUpHandler() {
-				this._mouseDown = false;
-			}
-		}, {
 			key: 'clearCanvas',
 			value: function clearCanvas() {
-				this.ctx.clearRect(0, 0, this._bound.width, this._bound.height);
+				var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.ctx;
+	
+				ctx.clearRect(0, 0, this._bound.width, this._bound.height);
 			}
 		}, {
 			key: 'getImage',
 			value: function getImage() {
+				var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.ctx;
 	
-				var image = this.ctx.getImageData(0, 0, this._bound.width, this._bound.height);
+	
+				var image = ctx.getImageData(0, 0, this._bound.width, this._bound.height);
 	
 				var pixels = [];
 	
@@ -207,12 +232,35 @@
 				return Object.assign({}, image, { data: pixels });
 			}
 		}, {
+			key: 'trainWithImage',
+			value: function trainWithImage(label, filename) {
+				var _this = this;
+	
+				var img = new Image();
+				img.src = filename;
+	
+				img.onload = function () {
+					_this._dummyCtx.drawImage(img, 0, 0);
+					_this._train(label, _this.getImage(_this._dummyCtx).data);
+					_this.clearCanvas(_this._dummyCtx);
+				};
+	
+				img.onerror = function () {
+					throw new Error('Couldn\'t load image');
+				};
+			}
+		}, {
+			key: '_train',
+			value: function _train(label, data) {
+				this.learn.train([{ label: label, data: data }]);
+			}
+		}, {
 			key: 'train',
 			value: function train(label) {
 				var _getImage = this.getImage(),
 				    data = _getImage.data;
 	
-				this.learn.train([{ label: label, data: data }]);
+				this._train(label, data);
 			}
 		}, {
 			key: 'classify',
