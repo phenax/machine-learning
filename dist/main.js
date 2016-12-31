@@ -68,18 +68,19 @@
 		var $output = document.querySelector('.js-output');
 		var $clearBtn = document.querySelector('.js-clear');
 	
-		$canvas.width = 100;
-		$canvas.height = 100;
+		$canvas.width = 200;
+		$canvas.height = 200;
 	
 		var _digitR = new _DigitRecognition2.default($canvas);
 	
-		var numberOfEach = 5;
-		var images = ['one', 'two'];
-		images.forEach(function (name) {
-			for (var i = 0; i < numberOfEach; i++) {
-				_digitR.trainWithImage(name, '/dist/training/' + name + '_' + (i + 1) + '.png');
-			}
-		});
+		window._digitR = _digitR;
+	
+		// const numberOfEach= 5;
+		// const images= ['one', 'two'];
+		// images.forEach(name => {
+		// 	for(let i= 0; i < numberOfEach; i++)
+		// 		_digitR.trainWithImage(name, `/dist/training/${name}_${i + 1}.png`);
+		// });
 	
 		$trainBtn.addEventListener('click', function () {
 			return _digitR.train($textField.value);
@@ -126,7 +127,10 @@
 	
 			this.ctx = this.$canvas.getContext('2d');
 	
-			this.learn = new _Learn.Learn(_Learn.Learn.kNN({ k: 2 }));
+			this.ctx.lineWidth = 5;
+			this.ctx.lineCap = 'round';
+	
+			this.learn = new _Learn.Learn(_Learn.Learn.kNN({ k: 3 }));
 	
 			this._mouseDown = false;
 			this._prevTouch = {};
@@ -249,6 +253,8 @@
 		}, {
 			key: '_trainWithData',
 			value: function _trainWithData(label, data) {
+	
+				console.log(data.length);
 	
 				data = data.map(function (bit, i) {
 					return bit === 1 ? i : -1;

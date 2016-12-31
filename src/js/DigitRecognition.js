@@ -14,10 +14,12 @@ export default class DigitRecognition {
 
 		document.body.appendChild($testCanvas);
 
-
 		this.ctx= this.$canvas.getContext('2d');
 
-		this.learn= new Learn(Learn.kNN({ k: 2 }));
+		this.ctx.lineWidth= 5;
+		this.ctx.lineCap= 'round';
+
+		this.learn= new Learn(Learn.kNN({ k: 3 }));
 
 		this._mouseDown= false;
 		this._prevTouch= {};
@@ -37,7 +39,6 @@ export default class DigitRecognition {
 
 		this.resizeHandler();
 		document.addEventListener('resize', this.resizeHandler);
-
 
 		this.$canvas.addEventListener('mousedown', this.mouseDownHandler);
 		this.$canvas.addEventListener('touchstart', this.mouseDownHandler);
@@ -134,6 +135,8 @@ export default class DigitRecognition {
 	}
 
 	_trainWithData(label, data) {
+
+		console.log(data.length);
 
 		data= 
 			data
