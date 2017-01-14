@@ -1,7 +1,15 @@
 
 import math from 'mathjs';
 
-
+/**
+ * Create a new matrix
+ * 
+ * @param  {Number}   row
+ * @param  {Number}   col
+ * @param  {Function|Number|null} fn   Filler(Fill the new matrix)
+ * 
+ * @return {Matrix}
+ */
 function newMatrix(row, col, fn) {
 
 	const isFunction= typeof fn === 'function';
@@ -14,6 +22,11 @@ function newMatrix(row, col, fn) {
 	return math.matrix(arr);
 }
 
+/**
+ * Print a matrix(for debugging)
+ * 
+ * @param  {Matrix} matrix
+ */
 function print(matrix) {
 	console.log('\nSize: ', matrix._size[0], 'x', matrix._size[1]);
 	console.log(matrix._data);
@@ -21,6 +34,10 @@ function print(matrix) {
 }
 
 
+
+/**
+ * Neural network class
+ */
 class NeuralNetwork {
 
 	constructor(props) {
@@ -32,14 +49,33 @@ class NeuralNetwork {
 		this.hiddenLayers= [];
 	}
 
+	/**
+	 * Sigmoid function
+	 * 
+	 * @param  {Number}  num
+	 * @return {Number}
+	 */
 	sigmoid(num) {
 		return 1/(1 + Math.exp(-num));
 	}
 
+	/**
+	 * Generate a random number between two values
+	 * 
+	 * @param  {Number} min
+	 * @param  {Number} max
+	 * @return {Number}      The random number
+	 */
 	random(min= 0, max= 10) {
 		return Math.random()*(max - min + 1) + min - 1;
 	}
 
+
+	/**
+	 * Create hidden layers based on a layout
+	 * 
+	 * @param  {Array} layout  An n-d array that presents nodes for hidden layers
+	 */
 	createHiddenLayers(layout) {
 
 		let layerSize= this.input._size[1];
@@ -62,9 +98,17 @@ class NeuralNetwork {
 		);
 	}
 
-	predict() {
 
-		let currentLayer= this.input;
+	/**
+	 * Predict the result for the network based on the weights
+	 *
+	 * @param  {Matrix}  input
+	 * 
+	 * @return {Matrix}
+	 */
+	predict(input) {
+
+		let currentLayer= input || this.input;
 
 		console.log('#################');
 
@@ -97,6 +141,13 @@ class NeuralNetwork {
 		return this._prediction;
 	}
 
+
+	/**
+	 * Train the neural network with a point
+	 * 
+	 * @param  {Array} point   The input point
+	 * @param  {Array} result  The desired result
+	 */
 	train(point, result) {
 
 		this.input= math.matrix([ point ]);
@@ -105,6 +156,10 @@ class NeuralNetwork {
 		this._propogate();	
 	}
 
+
+	/**
+	 * Propogate in the network
+	 */
 	_propogate() {
 
 		const prediction= this.predict();
@@ -113,6 +168,12 @@ class NeuralNetwork {
 		this._backwardPropogation(prediction);
 	}
 
+
+	/**
+	 * Move backwards in the network and correct the weights
+	 * 
+	 * @param  {Matrix} prediction
+	 */
 	_backwardPropogation(prediction) {
 
 		print(this.input);
