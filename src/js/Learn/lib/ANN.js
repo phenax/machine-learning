@@ -64,13 +64,6 @@ class NeuralNetwork {
 
 	predict() {
 
-	}
-
-	train(point, result) {
-
-		this.input= math.matrix([ point ]);
-		this.output= math.matrix([ result ]);
-
 		let currentLayer= this.input;
 
 		console.log('#################');
@@ -101,27 +94,57 @@ class NeuralNetwork {
 		// Multiply the two and the result is the predicted output
 		this._prediction= math.multiply(lastHiddenLayer, lastSynapse);
 
-		// Propogate backwards through the net and correct the weights
-		this._backwardPropogation();
+		return this._prediction;
 	}
 
-	_backwardPropogation() {
+	train(point, result) {
+
+		this.input= math.matrix([ point ]);
+		this.output= math.matrix([ result ]);
+
+		this._propogate();	
+	}
+
+	_propogate() {
+
+		const prediction= this.predict();
+
+		// Propogate backwards through the net and correct the weights
+		this._backwardPropogation(prediction);
+	}
+
+	_backwardPropogation(prediction) {
 
 		print(this.input);
 		print(this.output);
-		print(this._prediction);
+		print(prediction);
 
 		// Square sum of difference of expected and predicted output(Cost)
 		const cost= 
 			math.sum(
 				math.square(
-					math.subtract(this._prediction, this.output)
+					math.subtract(prediction, this.output)
 				)._data
 			);
 
 		console.log('Cost: ', cost);
 
 		// TODO: Figure out how to do back propogation
+
+		// Going backwards
+		for(let i= this.hiddenLayers.length - 1; i >= 0; i--) {
+
+			const _layer= this.hiddenLayers[i];
+
+
+
+		}
+
+		// TODO: Replace this with the condition that says the cost is minimized
+		if(!this.kkk) {
+			this.kkk= true;
+			this._propogate();
+		}
 	}
 }
 
