@@ -37,7 +37,7 @@ class NeuralNetwork {
 	}
 
 	random(min= 0, max= 10) {
-		return Math.random()*(max - min + 1) + min;
+		return Math.random()*(max - min + 1) + min - 1;
 	}
 
 	createHiddenLayers(layout) {
@@ -80,7 +80,10 @@ class NeuralNetwork {
 		this.hiddenLayers= this.hiddenLayers.map((layer, i) => {
 
 			// Matrix multiply currentLayer with layer
-			const result= math.multiply(currentLayer, this.weightLayers[i]);
+			let result= math.multiply(currentLayer, this.weightLayers[i]);
+
+			// Apply sigmoid function to all nodes in the layer
+			result= math.map(result, val => this.sigmoid(val));
 
 			// layer becomes currentLayer
 			currentLayer= result;
