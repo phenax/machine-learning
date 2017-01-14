@@ -1,6 +1,7 @@
 
 import kNN from './lib/kNN';
 import kMeans from './lib/kMeans';
+import ANN from './lib/ANN';
 
 export class Learn {
 
@@ -45,6 +46,10 @@ export class Learn {
 		return this._preparedFn(point);
 	}
 
+	predict(point) {
+		return this._preparedFn(point);
+	}
+
 
 	cluster(point) {
 
@@ -57,3 +62,4 @@ export class Learn {
 
 Learn.kNN= kNN;
 Learn.kMeans= kMeans;
+Learn.ANN= ANN;
