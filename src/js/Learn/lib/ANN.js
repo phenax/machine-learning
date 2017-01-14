@@ -45,9 +45,12 @@ class NeuralNetwork {
 		this.input= newMatrix(1, props.input);
 		this.output= newMatrix(1, props.output);
 
-		this.weightLayers= [];
-		this.hiddenLayers= [];
+		this.synapseMatrices= [];
+		this.hiddenMatrices= [];
+
+		this.neuronLayer= [];
 	}
+
 
 	/**
 	 * Sigmoid function
@@ -76,24 +79,38 @@ class NeuralNetwork {
 	 * 
 	 * @param  {Array} layout  An n-d array that presents nodes for hidden layers
 	 */
-	createHiddenLayers(layout) {
+	createHiddenLayers(layout, bias=0.3) {
 
 		let layerSize= this.input._size[1];
 
 		layout.forEach(_layer => {
 
 			const layer= newMatrix(1, _layer.length);
-			const weights= newMatrix(layerSize, _layer.length, () => this.random());
+
+			// const neuron= [];
+			const weights= newMatrix(layerSize, _layer.length, () => {
+
+				const number= this.random();
+
+				// neuron.push({
+				// 	_prevWt: number,
+				// 	net: 0,
+				// 	out: 0,
+				// });
+
+				return number;
+			});
 
 			print(weights);
 
-			this.weightLayers.push(weights);
-			this.hiddenLayers.push(layer);
+			// this.neuronLayer.push(neuron);
+			this.synapseMatrices.push(weights);
+			this.hiddenMatrices.push(layer);
 
 			layerSize= _layer.length;
 		});
 
-		this.weightLayers.push(
+		this.synapseMatrices.push(
 			newMatrix(layerSize, this.output._size[1], () => this.random())
 		);
 	}
@@ -114,10 +131,10 @@ class NeuralNetwork {
 
 
 		// For each layer
-		this.hiddenLayers= this.hiddenLayers.map((layer, i) => {
+		this.hiddenMatrices= this.hiddenMatrices.map((layer, i) => {
 
 			// Matrix multiply currentLayer with layer
-			let result= math.multiply(currentLayer, this.weightLayers[i]);
+			let result= math.multiply(currentLayer, this.synapseMatrices[i]);
 
 			// Apply sigmoid function to all nodes in the layer
 			result= math.map(result, val => this.sigmoid(val));
@@ -130,7 +147,7 @@ class NeuralNetwork {
 
 
 		// Get the last weight layer(synapse)
-		const lastSynapse= this.weightLayers[this.weightLayers.length - 1];
+		const lastSynapse= this.synapseMatrices[this.synapseMatrices.length - 1];
 
 		// Get the last hidden layer
 		const lastHiddenLayer= currentLayer;
@@ -181,7 +198,7 @@ class NeuralNetwork {
 		print(prediction);
 
 		// Square sum of difference of expected and predicted output(Cost)
-		const cost= 
+		const cost= 0.5 * 
 			math.sum(
 				math.square(
 					math.subtract(prediction, this.output)
@@ -190,14 +207,18 @@ class NeuralNetwork {
 
 		console.log('Cost: ', cost);
 
+
 		// TODO: Figure out how to do back propogation
 
+		let lastLayer= prediction;
+
 		// Going backwards
-		for(let i= this.hiddenLayers.length - 1; i >= 0; i--) {
+		for(let i= this.hiddenMatrices.length - 1; i >= 0; i--) {
 
-			const _layer= this.hiddenLayers[i];
+			const _layer= this.hiddenMatrices[i];
 
-
+			// Find the error for each node
+			// Adjust the weight according to it
 
 		}
 

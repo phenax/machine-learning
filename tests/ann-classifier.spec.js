@@ -24,9 +24,7 @@ describe('LearnJS ANN classifier', () => {
 			// { data: [ 1, 0, 0 ], result: [4] },
 		];
 
-		learn= new Learn(Learn.ANN({
-			hidden: [ [1, 1, 1, 1] ]
-		}));
+		learn= new Learn(Learn.ANN({ hidden: [ [1, 1, 1, 1] ] }));
 
 		learn.train(datasome);
 	});
