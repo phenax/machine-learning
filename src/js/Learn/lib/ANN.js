@@ -99,17 +99,23 @@ class NeuralNetwork {
 		const lastHiddenLayer= currentLayer;
 
 		// Multiply the two and the result is the predicted output
-		const res= math.multiply(lastHiddenLayer, lastSynapse);
+		this._prediction= math.multiply(lastHiddenLayer, lastSynapse);
+
+		// Propogate backwards through the net and correct the weights
+		this._backwardPropogation();
+	}
+
+	_backwardPropogation() {
 
 		print(this.input);
 		print(this.output);
-		print(res);
+		print(this._prediction);
 
 		// Square sum of difference of expected and predicted output(Cost)
 		const cost= 
 			math.sum(
 				math.square(
-					math.subtract(res, this.output)
+					math.subtract(this._prediction, this.output)
 				)._data
 			);
 
