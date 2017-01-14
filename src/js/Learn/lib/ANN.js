@@ -83,10 +83,11 @@ class NeuralNetwork {
 			const result= math.multiply(currentLayer, this.weightLayers[i]);
 
 			// layer becomes currentLayer
-			currentLayer= layer;
+			currentLayer= result;
 
 			return result;
 		});
+
 
 		// Get the last weight layer(synapse)
 		const lastSynapse= this.weightLayers[this.weightLayers.length - 1];
@@ -94,15 +95,15 @@ class NeuralNetwork {
 		// Get the last hidden layer
 		const lastHiddenLayer= currentLayer;
 
-
 		// Multiply the two and the result is the predicted output
 		const res= math.multiply(lastHiddenLayer, lastSynapse);
 
 		print(this.input);
+		print(this.output);
 		print(res);
 
-		// Square sum of difference of expected and predicted output
-		const cost= 0.5 * 
+		// Square sum of difference of expected and predicted output(Cost)
+		const cost= 
 			math.sum(
 				math.square(
 					math.subtract(res, this.output)
