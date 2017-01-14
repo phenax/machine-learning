@@ -17,11 +17,11 @@ describe('LearnJS ANN classifier', () => {
 	beforeEach(() => {
 
 		const datasome= [
-			{ data: [ 0, 0, 0 ], result: [0] },
-			{ data: [ 0, 0, 1 ], result: [1] },
-			{ data: [ 0, 1, 0 ], result: [2] },
+			// { data: [ 0, 0, 0 ], result: [0] },
+			// { data: [ 0, 0, 1 ], result: [1] },
+			// { data: [ 0, 1, 0 ], result: [2] },
 			{ data: [ 0, 1, 1 ], result: [3] },
-			{ data: [ 1, 0, 0 ], result: [4] },
+			// { data: [ 1, 0, 0 ], result: [4] },
 		];
 
 		learn= new Learn(Learn.ANN({

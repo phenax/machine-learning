@@ -6,7 +6,7 @@ function newMatrix(row, col, fn) {
 
 	const isFunction= typeof fn === 'function';
 
-	let arr= Array(row).fill([]).map(() => Array(col).fill(isFunction? 0: fn));
+	let arr= Array(row).fill([]).map(() => Array(col).fill(isFunction? 0: fn || 0));
 
 	if(isFunction)
 		arr= arr.map(a => a.map(fn));
@@ -18,7 +18,7 @@ function print(matrix) {
 	console.log('\nSize: ', matrix._size[0], 'x', matrix._size[1]);
 	console.log(matrix._data);
 	console.log();
-};
+}
 
 
 class NeuralNetwork {
@@ -46,7 +46,7 @@ class NeuralNetwork {
 
 		layout.forEach(_layer => {
 
-			const layer= newMatrix(_layer.length, 1);
+			const layer= newMatrix(1, _layer.length);
 			const weights= newMatrix(layerSize, _layer.length, () => this.random());
 
 			print(weights);
@@ -57,7 +57,9 @@ class NeuralNetwork {
 			layerSize= _layer.length;
 		});
 
-		this.weightLayers.push(newMatrix(layerSize, this.output._size[1], () => this.random()));
+		this.weightLayers.push(
+			newMatrix(layerSize, this.output._size[1], () => this.random())
+		);
 	}
 
 	predict() {
@@ -71,6 +73,9 @@ class NeuralNetwork {
 
 		let currentLayer= this.input;
 
+		console.log('#################');
+
+
 		// For each layer
 		this.hiddenLayers= this.hiddenLayers.map((layer, i) => {
 
@@ -83,16 +88,30 @@ class NeuralNetwork {
 			return result;
 		});
 
-		// Get the last weight
-		// Multiply it with the last weight and the result is the predicted output
-		// Calculate cost(error)
-		// 
-		// TODO: Figure out how to do back propogation
+		// Get the last weight layer(synapse)
+		const lastSynapse= this.weightLayers[this.weightLayers.length - 1];
 
-		// console.log('\n\nhidden');
-		// print(this.hiddenLayers[0]);
-		// console.log('\n\nweight');
-		// print(this.weightLayers[0]);
+		// Get the last hidden layer
+		const lastHiddenLayer= currentLayer;
+
+
+		// Multiply the two and the result is the predicted output
+		const res= math.multiply(lastHiddenLayer, lastSynapse);
+
+		print(this.input);
+		print(res);
+
+		// Square sum of difference of expected and predicted output
+		const cost= 0.5 * 
+			math.sum(
+				math.square(
+					math.subtract(res, this.output)
+				)._data
+			);
+
+		console.log('Cost: ', cost);
+
+		// TODO: Figure out how to do back propogation
 	}
 }
 
@@ -106,6 +125,8 @@ export default config => {
 		});
 
 		ann.createHiddenLayers(config.hidden);
+
+		console.log('--------------------------');
 
 		trainingSet
 			.forEach(point => {
