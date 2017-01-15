@@ -217,6 +217,17 @@ class NeuralNetwork {
 
 			const _layer= this.hiddenMatrices[i];
 
+			let sum= 0;
+
+			_layer.forEach(node => sum+= node);
+
+
+			_layer.forEach(node => {
+
+				// const expectedValue= 
+			});
+
+
 			// Find the error for each node
 			// Adjust the weight according to it
 
