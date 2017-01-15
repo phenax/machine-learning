@@ -241,6 +241,8 @@ class NeuralNetwork {
 	}
 }
 
+
+
 export default config => {
 
 	return trainingSet => {
