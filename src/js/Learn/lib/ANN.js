@@ -101,7 +101,7 @@ class NeuralNetwork {
 				return number;
 			});
 
-			print(weights);
+			// print(weights);
 
 			// this.neuronLayer.push(neuron);
 			this.synapseMatrices.push(weights);
@@ -243,8 +243,11 @@ class NeuralNetwork {
 
 
 
+
+
 export default config => {
 
+	// Training
 	return trainingSet => {
 
 		const ann= new NeuralNetwork({
@@ -261,7 +264,13 @@ export default config => {
 				ann.train(point.data, point.result);
 			});
 
-		return predict => {
+
+		// Prediction
+		return point => {
+
+			point= math.matrix(point);
+
+			console.log('\n++++++ RESULT:\n', ann.predict(point)._data, '\n++++++\n');
 
 			return 0;
 		};

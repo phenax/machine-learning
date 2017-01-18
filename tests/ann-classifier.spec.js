@@ -37,20 +37,21 @@ describe('LearnJS ANN classifier', () => {
 		expect(result).to.eql(0);
 	});
 
-	it('should improve accuracy with more training', () => {
+	// it('should improve accuracy with more training', () => {
 
-		let totalPredictions= 0;
+	// 	let totalPredictions= 0;
 
-		datasome.forEach(point => {
-			const prediction= learn.predict(point);
+	// 	datasome.forEach(point => {
 
-			if(true) {
-				totalPredictions+= 1;
-			}
-		});
+	// 		const prediction= learn.predict(point.data);
+
+	// 		if(true) {
+	// 			totalPredictions+= 1;
+	// 		}
+	// 	});
 
 
 
-		// expect(totalPredictions).to.b(0);
-	});
+	// 	expect(totalPredictions).to.eql(0);
+	// });
 });
