@@ -52,7 +52,11 @@ class NeuralNetwork {
 
 		this.neuronLayer= [];
 
+		// Random number seed
 		this.randomNumberSeed= 1;
+
+		// Number of iteration
+		this.iterationCount= 3001;
 	}
 
 	randomNumber() {
@@ -73,12 +77,18 @@ class NeuralNetwork {
 
 
 	/**
-	 * Sigmoid function
+	 * activation function
 	 * 
-	 * @param  {Number}  num
+	 * @param  {Number}   num
+	 * @param  {Boolean}  derivative
+	 * 
 	 * @return {Number}
 	 */
-	sigmoid(num) {
+	activation(num, derivative=false) {
+
+		if(derivative)
+			return num*(num - 1);
+
 		return 1/(1 + Math.exp(-num));
 	}
 
@@ -127,8 +137,6 @@ class NeuralNetwork {
 
 		let currentLayer= input || this.input;
 
-		console.log('#################');
-
 
 		// For each layer
 		this.hiddenMatrices= this.hiddenMatrices.map((layer, i) => {
@@ -136,8 +144,8 @@ class NeuralNetwork {
 			// Matrix multiply currentLayer with layer
 			let result= math.multiply(currentLayer, this.synapseMatrices[i]);
 
-			// Apply sigmoid function to all nodes in the layer
-			result= math.map(result, val => this.sigmoid(val));
+			// Apply activation function to all nodes in the layer
+			result= math.map(result, val => this.activation(val));
 
 			// layer becomes currentLayer
 			currentLayer= result;
@@ -177,12 +185,12 @@ class NeuralNetwork {
 	/**
 	 * Propogate in the network
 	 */
-	_propogate() {
+	_propogate(iteration=0) {
 
 		const prediction= this.predict();
 
 		// Propogate backwards through the net and correct the weights
-		this._backwardPropogation(prediction);
+		this._backwardPropogation(prediction, iteration);
 	}
 
 
@@ -191,43 +199,36 @@ class NeuralNetwork {
 	 * 
 	 * @param  {Matrix} prediction
 	 */
-	_backwardPropogation(prediction) {
-
-		print(this.input);
-		print(this.output);
-		print(prediction);
-
-
-		const errorMatr= math.subtract(prediction, this.output);
-
-		console.log('Error matr');
-		print(errorMatr);
-
-		// Square sum of difference of expected and predicted output(Cost)
-		const cost= 0.5 * math.sum(math.square(errorMatr)._data);
-		console.log('Cost: ', cost);
-
-
-		// TODO: Figure out how to do back propogation
+	_backwardPropogation(prediction, iteration) {
 
 		let lastLayer= prediction;
 
 		// Going backwards
 		for(let i= this.hiddenMatrices.length - 1; i >= 0; i--) {
 
+			const errorMatr= math.subtract(lastLayer, this.output);
+
+			if(iteration%100 === 0) {
+				// Square sum of difference of expected and predicted output(Cost)
+				const cost= 0.5 * math.sum(math.square(errorMatr)._data);
+				console.log('Cost: ', cost);
+			}
+
 			const _layer= this.hiddenMatrices[i];
-			const _weights= this.synapseMatrices[i + 1];
 
+			const sigm= math.map(_layer, val => this.activation(val, true));
 
-			// Find the error for each node
-			// Adjust the weight according to it
+			const delta= math.multiply(errorMatr, sigm);
 
+			this.synapseMatrices[i + 1]= 
+				math.add(math.transpose(delta), this.synapseMatrices[i + 1]);
+
+			lastLayer= _layer;
 		}
 
 		// TODO: Replace this with the condition that says the cost is minimized
-		if(!this.kkk) {
-			this.kkk= true;
-			this._propogate();
+		if(iteration <= this.iterationCount) {
+			this._propogate(iteration + 1);
 		}
 	}
 }
