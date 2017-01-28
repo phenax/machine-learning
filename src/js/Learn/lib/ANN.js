@@ -1,6 +1,8 @@
 
 import math from 'mathjs';
 
+
+
 /**
  * Create a new matrix
  * 
@@ -49,6 +51,24 @@ class NeuralNetwork {
 		this.hiddenMatrices= [];
 
 		this.neuronLayer= [];
+
+		this.randomNumberSeed= 1;
+	}
+
+	randomNumber() {
+		const x = Math.sin(this.randomNumberSeed++) * 10000;
+		return x - Math.floor(x);
+	}
+
+	/**
+	 * Generate a random number between two values
+	 * 
+	 * @param  {Number} min
+	 * @param  {Number} max
+	 * @return {Number}      The random number
+	 */
+	random(min= 0, max= 10) {
+		return this.randomNumber()*(max - min + 1) + min - 1;
 	}
 
 
@@ -62,24 +82,13 @@ class NeuralNetwork {
 		return 1/(1 + Math.exp(-num));
 	}
 
-	/**
-	 * Generate a random number between two values
-	 * 
-	 * @param  {Number} min
-	 * @param  {Number} max
-	 * @return {Number}      The random number
-	 */
-	random(min= 0, max= 10) {
-		return Math.random()*(max - min + 1) + min - 1;
-	}
-
 
 	/**
 	 * Create hidden layers based on a layout
 	 * 
 	 * @param  {Array} layout  An n-d array that presents nodes for hidden layers
 	 */
-	createHiddenLayers(layout, bias=0.3) {
+	createHiddenLayers(layout, bias) {
 
 		let layerSize= this.input._size[1];
 
@@ -87,23 +96,14 @@ class NeuralNetwork {
 
 			const layer= newMatrix(1, _layer.length);
 
-			// const neuron= [];
 			const weights= newMatrix(layerSize, _layer.length, () => {
-
-				const number= this.random();
-
-				// neuron.push({
-				// 	_prevWt: number,
-				// 	net: 0,
-				// 	out: 0,
-				// });
-
+				const number= this.random(0, 10);
 				return number;
 			});
 
-			// print(weights);
+			console.log('INITIAL WEIGHTS ->');
+			print(weights);
 
-			// this.neuronLayer.push(neuron);
 			this.synapseMatrices.push(weights);
 			this.hiddenMatrices.push(layer);
 
@@ -111,7 +111,7 @@ class NeuralNetwork {
 		});
 
 		this.synapseMatrices.push(
-			newMatrix(layerSize, this.output._size[1], () => this.random())
+			newMatrix(layerSize, this.output._size[1], () => this.random(0, 10))
 		);
 	}
 
@@ -197,14 +197,14 @@ class NeuralNetwork {
 		print(this.output);
 		print(prediction);
 
-		// Square sum of difference of expected and predicted output(Cost)
-		const cost= 0.5 * 
-			math.sum(
-				math.square(
-					math.subtract(prediction, this.output)
-				)._data
-			);
 
+		const errorMatr= math.subtract(prediction, this.output);
+
+		console.log('Error matr');
+		print(errorMatr);
+
+		// Square sum of difference of expected and predicted output(Cost)
+		const cost= 0.5 * math.sum(math.square(errorMatr)._data);
 		console.log('Cost: ', cost);
 
 
@@ -216,16 +216,7 @@ class NeuralNetwork {
 		for(let i= this.hiddenMatrices.length - 1; i >= 0; i--) {
 
 			const _layer= this.hiddenMatrices[i];
-
-			let sum= 0;
-
-			_layer.forEach(node => sum+= node);
-
-
-			_layer.forEach(node => {
-
-				// const expectedValue= 
-			});
+			const _weights= this.synapseMatrices[i + 1];
 
 
 			// Find the error for each node
