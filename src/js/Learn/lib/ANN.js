@@ -67,11 +67,17 @@ class NeuralNetwork {
 	 * @param  {Number} max
 	 * @return {Number}      The random number
 	 */
-	random(min= 0, max= 10) {
+	random(min= 0, max= 1) {
 
-		const x = Math.sin(this.randomNumberSeed++) * 10000;
+		let random;
 
-		const random= x - Math.floor(x);
+		if(this.randomNumberSeed !== false) {
+			const x = Math.sin(this.randomNumberSeed++) * 10000;
+			random= x - Math.floor(x);
+		} else {
+			random= Math.random();
+		}
+
 
 		return random*(max - min + 1) + min - 1;
 	}
@@ -110,7 +116,7 @@ class NeuralNetwork {
 			const layer= newMatrix(1, _layer.length);
 
 			const weights= newMatrix(layerSize, _layer.length, () => {
-				const number= this.random(0, 10);
+				const number= this.random();
 				return number;
 			});
 
@@ -122,9 +128,7 @@ class NeuralNetwork {
 			layerSize= _layer.length;
 		});
 
-		// console.log(this.output);
-
-		const lastSynapse= newMatrix(layerSize, this.output._size[1], () => this.random(0, 10));
+		const lastSynapse= newMatrix(layerSize, this.output._size[1], () => this.random());
 
 		this.synapseMatrices.push(lastSynapse);
 
@@ -143,7 +147,7 @@ class NeuralNetwork {
 	 */
 	predict(input) {
 
-		let currentLayer= input;
+		let currentLayer= math.matrix([input]);
 
 
 		// For each layer
@@ -168,8 +172,10 @@ class NeuralNetwork {
 		// Get the last hidden layer
 		const lastHiddenLayer= currentLayer;
 
+		const result= math.multiply(lastHiddenLayer, lastSynapse);
+
 		// Multiply the two and the result is the predicted output
-		this._prediction= math.multiply(lastHiddenLayer, lastSynapse);
+		this._prediction= math.map(result, val => this.activation(val));
 
 		return this._prediction;
 	}
@@ -186,29 +192,36 @@ class NeuralNetwork {
 		this.input= math.matrix([ point ]);
 		this.output= math.matrix([ result ]);
 
-		print(this.output);
-
-		this._propogate();	
+		this._propogate(point);	
 	}
 
 
 	/**
 	 * Propogate in the network
 	 */
-	_propogate() {
+	_propogate(input) {
 		console.log('------');
 
 		let cost= 1;
 
 		for(let i= 0; cost >= 0.005 && i< this.maxIterationCount; i++) {
 
-			const prediction= this.predict(this.input);
-
-			// print(prediction);
+			const prediction= this.predict(input);
 
 			// Propogate backwards through the net and correct the weights
-			cost= this._backwardPropogation(prediction, i);
+			cost= this._backwardPropogation(prediction);
+
+			if(i%1000 === 0 || cost <= 0.005) {
+				console.log('Cost: ', cost);
+			}
 		}
+	}
+
+	calculateDelta(layer, error) {
+
+		const actLayer= math.map(layer, val => this.activation(val, true));
+
+		return math.multiply(error, actLayer);
 	}
 
 
@@ -216,45 +229,49 @@ class NeuralNetwork {
 	 * Move backwards in the network and correct the weights
 	 * 
 	 * @param  {Matrix} prediction
+	 *
+	 * @return {Number}
 	 */
-	_backwardPropogation(prediction, iteration) {
+	_backwardPropogation(prediction) {
 
-		let lastLayer= prediction;
+		let prevLayer= prediction;
+		let prevLayerExpected= this.output;
 
-		const getCost= errorMatr => 0.5 * math.sum(math.square(errorMatr)._data);
+		const updateWeights= (delta, i) => {
+			// Update the synapse weights
+			this.synapseMatrices[i]= 
+				math.add(math.transpose(delta), this.synapseMatrices[i]);
+		};
 
-		const errorMatr= math.transpose(math.subtract(prediction, this.output));
-		const endCost= getCost(errorMatr);
+		const getError= () => 
+			math.transpose(math.subtract(prevLayer, prevLayerExpected));
+
 
 		// Going backwards
 		for(let i= this.hiddenMatrices.length - 1; i >= 0; i--) {
 
-			const errorMatr= math.transpose(math.subtract(lastLayer, this.output));
-
-			const _layer= this.hiddenMatrices[i];
-
-			const sigm= math.map(_layer, val => this.activation(val, true));
-
-			const delta= math.multiply(errorMatr, sigm);
+			const delta= this.calculateDelta(this.hiddenMatrices[i], getError());
 
 			// Update the synapse weights
-			this.synapseMatrices[i + 1]= 
-				math.add(math.transpose(delta), this.synapseMatrices[i + 1]);
+			updateWeights(delta, i + 1);
 
-
-			lastLayer= _layer;
-
-			// Square sum of difference of expected and predicted output(Cost)
-			const cost= getCost(errorMatr);
-
-			if(iteration%1000 === 0) {
-				console.log('Cost: ', cost);
-			}
+			prevLayerExpected= 
+				math.multiply(prevLayer, 
+					math.transpose(this.synapseMatrices[i + 1]));
+			prevLayer= this.hiddenMatrices[i];
 		}
 
-		iteration++;
 
-		return endCost;
+		const delta= this.calculateDelta(this.input, getError());
+
+		// Update the synapse weights
+		updateWeights(delta, 0);
+
+		// Get cost from error matrix
+		const getCost= errorMatr => 0.5 * math.sum(math.square(errorMatr)._data);
+
+		// Return the prediction cost
+		return getCost(math.subtract(prediction, this.output));
 	}
 }
 
@@ -281,15 +298,15 @@ export default config => {
 				ann.train(point.data, point.result);
 			});
 
+		console.log('\n\n\n-------------------------');
 
 		// Prediction
 		return point => {
 
-			point= math.matrix(point);
-
-			console.log('\n++++++ RESULT:\n');
-			print(ann.predict(point));
-			console.log('\n++++++\n');
+			console.log('++ RESULT:', 
+				point, 
+				ann.predict(point).map(val => Math.round(val*100000)/100000)._data,
+			'++');
 
 			return 0;
 		};
