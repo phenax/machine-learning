@@ -93,10 +93,15 @@ class NeuralNetwork {
 	 */
 	activation(num, derivative=false) {
 
-		if(derivative)
-			return num*(num - 1);
+		if(derivative) {
+			return this.activation(num)*(1 - this.activation(num));
+		}
 
 		return 1/(1 + Math.exp(-num));
+	}
+
+	activateMatrix(matrix, derivative) {
+		return math.map(matrix, val => this.activation(val, derivative));
 	}
 
 
@@ -115,12 +120,7 @@ class NeuralNetwork {
 
 			const layer= newMatrix(1, _layer.length);
 
-			const weights= newMatrix(layerSize, _layer.length, () => {
-				const number= this.random();
-				return number;
-			});
-
-			print(weights);
+			const weights= newMatrix(layerSize, _layer.length, () => this.random());
 
 			this.synapseMatrices.push(weights);
 			this.hiddenMatrices.push(layer);
@@ -128,11 +128,12 @@ class NeuralNetwork {
 			layerSize= _layer.length;
 		});
 
-		const lastSynapse= newMatrix(layerSize, this.output._size[1], () => this.random());
+		const lastSynapse= 
+			newMatrix(layerSize, this.output._size[1], () => this.random());
 
 		this.synapseMatrices.push(lastSynapse);
 
-		print(lastSynapse);
+		this.printSynapse();
 
 		console.log('--------- END INITIAL WEIGHTS ----------');
 	}
@@ -147,7 +148,7 @@ class NeuralNetwork {
 	 */
 	predict(input) {
 
-		let currentLayer= math.matrix([input]);
+		let currentLayer= (input)? math.matrix([input]): this.input;
 
 
 		// For each layer
@@ -157,7 +158,7 @@ class NeuralNetwork {
 			let result= math.multiply(currentLayer, this.synapseMatrices[i]);
 
 			// Apply activation function to all nodes in the layer
-			result= math.map(result, val => this.activation(val));
+			result= this.activateMatrix(result);
 
 			// layer becomes currentLayer
 			currentLayer= result;
@@ -172,13 +173,12 @@ class NeuralNetwork {
 		// Get the last hidden layer
 		const lastHiddenLayer= currentLayer;
 
-		const result= math.multiply(lastHiddenLayer, lastSynapse);
+		const prediction= math.multiply(lastHiddenLayer, lastSynapse);
 
 		// Multiply the two and the result is the predicted output
-		this._prediction= math.map(result, val => this.activation(val));
-
-		return this._prediction;
+		return this.activateMatrix(prediction);
 	}
+
 
 
 	/**
@@ -192,7 +192,16 @@ class NeuralNetwork {
 		this.input= math.matrix([ point ]);
 		this.output= math.matrix([ result ]);
 
-		this._propogate(point);	
+		this._propogate();
+	}
+
+
+	printSynapse() {
+		this.synapseMatrices
+			.map(a => math.map(a, b => Math.round(b*1000)/1000)._data)
+			.forEach(a => {
+				console.log(a);
+			});
 	}
 
 
@@ -200,26 +209,33 @@ class NeuralNetwork {
 	 * Propogate in the network
 	 */
 	_propogate(input) {
-		console.log('------');
 
 		let cost= 1;
+		const MIN_COST= 0.1;
 
-		for(let i= 0; cost >= 0.005 && i< this.maxIterationCount; i++) {
+		for(let i= 0; cost >= MIN_COST && i< this.maxIterationCount; i++) {
 
 			const prediction= this.predict(input);
 
 			// Propogate backwards through the net and correct the weights
 			cost= this._backwardPropogation(prediction);
 
-			if(i%1000 === 0 || cost <= 0.005) {
+			if(i%1000 === 0 || cost <= MIN_COST) {
+				console.log('\n+ SYNAPSE +\n');
+				this.printSynapse();
 				console.log('Cost: ', cost);
+				console.log('\n+ SYNAPSE +\n');
 			}
 		}
+
+		console.log('------');
 	}
+
+
 
 	calculateDelta(layer, error) {
 
-		const actLayer= math.map(layer, val => this.activation(val, true));
+		const actLayer= this.activateMatrix(layer, true);
 
 		return math.multiply(error, actLayer);
 	}
@@ -237,12 +253,13 @@ class NeuralNetwork {
 		let prevLayer= prediction;
 		let prevLayerExpected= this.output;
 
+		// Update the synapse weights
 		const updateWeights= (delta, i) => {
-			// Update the synapse weights
 			this.synapseMatrices[i]= 
 				math.add(math.transpose(delta), this.synapseMatrices[i]);
 		};
 
+		// Get the error(prevLayer and prevLayerExpected)
 		const getError= () => 
 			math.transpose(math.subtract(prevLayer, prevLayerExpected));
 
@@ -260,9 +277,15 @@ class NeuralNetwork {
 					math.transpose(this.synapseMatrices[i + 1]));
 			prevLayer= this.hiddenMatrices[i];
 		}
-
+		// console.log('Prev');
 
 		const delta= this.calculateDelta(this.input, getError());
+
+		// print(this.input);
+		// print(delta);
+		// print(prevLayer);
+		// print(prevLayerExpected);
+
 
 		// Update the synapse weights
 		updateWeights(delta, 0);

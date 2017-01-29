@@ -15,9 +15,9 @@ describe('LearnJS ANN classifier', () => {
 	// const labels= dataset.map(p => p.label);
 
 	const datasome= [
-		{ data: [ 0, 0 ], result: [ 0 ] },
-		{ data: [ 0, 1 ], result: [ 1 ] },
-		{ data: [ 1, 0 ], result: [ 0 ] },
+		{ data: [ 0.1, 0.1 ], result: [ 0.1 ] },
+		{ data: [ 0.1, 1 ], result: [ 1 ] },
+		{ data: [ 1, 0.1 ], result: [ 0.1 ] },
 		{ data: [ 1, 1 ], result: [ 1 ] },
 	];
 
@@ -27,7 +27,7 @@ describe('LearnJS ANN classifier', () => {
 		this.timeout(20000);
 
 		learn= new Learn(Learn.ANN({ hidden: [ [1, 1, 1, 1, 1] ] }));
-		learn.iterationCount= 10001;
+		learn.iterationCount= 5001;
 
 		learn.train(datasome);
 
