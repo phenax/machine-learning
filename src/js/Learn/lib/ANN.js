@@ -56,13 +56,9 @@ class NeuralNetwork {
 		this.randomNumberSeed= 1;
 
 		// Number of iteration
-		this.iterationCount= 3001;
+		this.maxIterationCount= 10001;
 	}
 
-	randomNumber() {
-		const x = Math.sin(this.randomNumberSeed++) * 10000;
-		return x - Math.floor(x);
-	}
 
 	/**
 	 * Generate a random number between two values
@@ -72,7 +68,12 @@ class NeuralNetwork {
 	 * @return {Number}      The random number
 	 */
 	random(min= 0, max= 10) {
-		return this.randomNumber()*(max - min + 1) + min - 1;
+
+		const x = Math.sin(this.randomNumberSeed++) * 10000;
+
+		const random= x - Math.floor(x);
+
+		return random*(max - min + 1) + min - 1;
 	}
 
 
@@ -98,9 +99,11 @@ class NeuralNetwork {
 	 * 
 	 * @param  {Array} layout  An n-d array that presents nodes for hidden layers
 	 */
-	createHiddenLayers(layout, bias) {
+	createHiddenLayers(layout) {
 
 		let layerSize= this.input._size[1];
+
+		console.log('--------- INITIAL WEIGHTS ----------');
 
 		layout.forEach(_layer => {
 
@@ -111,7 +114,6 @@ class NeuralNetwork {
 				return number;
 			});
 
-			console.log('INITIAL WEIGHTS ->');
 			print(weights);
 
 			this.synapseMatrices.push(weights);
@@ -120,9 +122,15 @@ class NeuralNetwork {
 			layerSize= _layer.length;
 		});
 
-		this.synapseMatrices.push(
-			newMatrix(layerSize, this.output._size[1], () => this.random(0, 10))
-		);
+		// console.log(this.output);
+
+		const lastSynapse= newMatrix(layerSize, this.output._size[1], () => this.random(0, 10));
+
+		this.synapseMatrices.push(lastSynapse);
+
+		print(lastSynapse);
+
+		console.log('--------- END INITIAL WEIGHTS ----------');
 	}
 
 
@@ -135,7 +143,7 @@ class NeuralNetwork {
 	 */
 	predict(input) {
 
-		let currentLayer= input || this.input;
+		let currentLayer= input;
 
 
 		// For each layer
@@ -178,6 +186,8 @@ class NeuralNetwork {
 		this.input= math.matrix([ point ]);
 		this.output= math.matrix([ result ]);
 
+		print(this.output);
+
 		this._propogate();	
 	}
 
@@ -185,12 +195,20 @@ class NeuralNetwork {
 	/**
 	 * Propogate in the network
 	 */
-	_propogate(iteration=0) {
+	_propogate() {
+		console.log('------');
 
-		const prediction= this.predict();
+		let cost= 1;
 
-		// Propogate backwards through the net and correct the weights
-		this._backwardPropogation(prediction, iteration);
+		for(let i= 0; cost >= 0.005 && i< this.maxIterationCount; i++) {
+
+			const prediction= this.predict(this.input);
+
+			// print(prediction);
+
+			// Propogate backwards through the net and correct the weights
+			cost= this._backwardPropogation(prediction, i);
+		}
 	}
 
 
@@ -203,16 +221,15 @@ class NeuralNetwork {
 
 		let lastLayer= prediction;
 
+		const getCost= errorMatr => 0.5 * math.sum(math.square(errorMatr)._data);
+
+		const errorMatr= math.transpose(math.subtract(prediction, this.output));
+		const endCost= getCost(errorMatr);
+
 		// Going backwards
 		for(let i= this.hiddenMatrices.length - 1; i >= 0; i--) {
 
-			const errorMatr= math.subtract(lastLayer, this.output);
-
-			if(iteration%100 === 0) {
-				// Square sum of difference of expected and predicted output(Cost)
-				const cost= 0.5 * math.sum(math.square(errorMatr)._data);
-				console.log('Cost: ', cost);
-			}
+			const errorMatr= math.transpose(math.subtract(lastLayer, this.output));
 
 			const _layer= this.hiddenMatrices[i];
 
@@ -220,16 +237,24 @@ class NeuralNetwork {
 
 			const delta= math.multiply(errorMatr, sigm);
 
+			// Update the synapse weights
 			this.synapseMatrices[i + 1]= 
 				math.add(math.transpose(delta), this.synapseMatrices[i + 1]);
 
+
 			lastLayer= _layer;
+
+			// Square sum of difference of expected and predicted output(Cost)
+			const cost= getCost(errorMatr);
+
+			if(iteration%1000 === 0) {
+				console.log('Cost: ', cost);
+			}
 		}
 
-		// TODO: Replace this with the condition that says the cost is minimized
-		if(iteration <= this.iterationCount) {
-			this._propogate(iteration + 1);
-		}
+		iteration++;
+
+		return endCost;
 	}
 }
 
@@ -244,7 +269,7 @@ export default config => {
 
 		const ann= new NeuralNetwork({
 			input: trainingSet[0].data.length,
-			output: 1,
+			output: trainingSet[0].result.length,
 		});
 
 		ann.createHiddenLayers(config.hidden);
@@ -262,7 +287,9 @@ export default config => {
 
 			point= math.matrix(point);
 
-			console.log('\n++++++ RESULT:\n', ann.predict(point)._data, '\n++++++\n');
+			console.log('\n++++++ RESULT:\n');
+			print(ann.predict(point));
+			console.log('\n++++++\n');
 
 			return 0;
 		};
